@@ -141,7 +141,7 @@
         
         function tryOpenAppAutomatically() {
             const appURL = `noval://book?id=${bookId}`;
-            const fallbackURL = "https://apps.apple.com/us/app/echo-in-ear-voice-translator/id6742157123";
+            const fallbackURL = "https://apps.apple.com/us/app/duolingo-language-lessons/id570060128";
             const isMac = /Mac|iPad/.test(navigator.platform) || (navigator.userAgentData && navigator.userAgentData.platform === 'macOS');
             
             if (isMac) {
@@ -187,7 +187,7 @@
             }
             
             const appURL = `noval://book?id=${bookId}`;
-            const fallbackURL = "https://apps.apple.com/us/app/echo-in-ear-voice-translator/id6742157123";
+            const fallbackURL = "https://apps.apple.com/us/app/duolingo-language-lessons/id570060128";
             
             // Show loading state
             document.getElementById('openAppBtn').style.display = 'none';
