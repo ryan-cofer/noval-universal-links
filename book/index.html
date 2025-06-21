@@ -16,27 +16,33 @@
     <meta name="apple-itunes-app" content="app-id=6742157123">
     
     <script>
-        // Extract the book ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const bookId = urlParams.get('id');
-        
-        // Set Firebase Storage image URL (assuming image is at root with bookId as filename)
-        if (bookId) {
-            const firebaseImageUrl = `https://firebasestorage.googleapis.com/v0/b/noval-3e2ae.appspot.com/o/${encodeURIComponent(bookId)}?alt=media`;
-            
-            // Update meta tags for rich preview
-            document.getElementById('ogImage').content = firebaseImageUrl;
-            document.getElementById('ogUrl').content = window.location.href;
-            
-            // Try to open app immediately
-            window.location.href = `noval://book?id=${bookId}`;
-            
-            // If app isn't installed, redirect to App Store after delay
-            setTimeout(function() {
-                window.location.href = "https://apps.apple.com/us/app/echo-in-ear-voice-translator/id6742157123";
-            }, 500);
-        }
-    </script>
+    const bookId = new URLSearchParams(window.location.search).get('id');
+
+    if (bookId) {
+        const firebaseImageUrl = `https://firebasestorage.googleapis.com/v0/b/noval-3e2ae.appspot.com/o/${encodeURIComponent(bookId)}?alt=media`;
+        document.getElementById('ogImage').content = firebaseImageUrl;
+        document.getElementById('ogUrl').content = window.location.href;
+
+        // Attempt to open the app
+        const appURL = `noval://book?id=${bookId}`;
+        const fallbackURL = "https://apps.apple.com/us/app/echo-in-ear-voice-translator/id6742157123";
+
+        // Set up a redirect timer
+        const redirect = setTimeout(() => {
+            window.location.href = fallbackURL;
+        }, 2000); // Wait 2 seconds
+
+        // If the app opens, the page will go to background
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                clearTimeout(redirect);
+            }
+        });
+
+        // Kick off the app open attempt
+        window.location.href = appURL;
+    }
+</script>
     
     <style>
         body {
