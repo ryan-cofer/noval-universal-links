@@ -15,56 +15,203 @@
     <!-- Smart App Banner (optional) -->
     <meta name="apple-itunes-app" content="app-id=6742157123">
     
-    <script>
-    const bookId = new URLSearchParams(window.location.search).get('id');
-
-    if (bookId) {
-        const firebaseImageUrl = `https://firebasestorage.googleapis.com/v0/b/noval-3e2ae.appspot.com/o/${encodeURIComponent(bookId)}?alt=media`;
-        document.getElementById('ogImage').content = firebaseImageUrl;
-        document.getElementById('ogUrl').content = window.location.href;
-
-        // Attempt to open the app
-        const appURL = `noval://book?id=${bookId}`;
-        const fallbackURL = "https://apps.apple.com/us/app/echo-in-ear-voice-translator/id6742157123";
-
-        // Set up a redirect timer
-        const redirect = setTimeout(() => {
-            window.location.href = fallbackURL;
-        }, 2000); // Wait 2 seconds
-
-        // If the app opens, the page will go to background
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "hidden") {
-                clearTimeout(redirect);
-            }
-        });
-
-        // Kick off the app open attempt
-        window.location.href = appURL;
-    }
-</script>
-    
     <style>
         body {
             font-family: -apple-system, sans-serif;
             text-align: center;
             padding: 2rem;
             color: #333;
+            max-width: 400px;
+            margin: 0 auto;
+            display: none; /* Hidden by default, shown only if app doesn't open */
         }
+        
+        .book-preview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .book-image {
+            width: 120px;
+            height: 160px;
+            background: #ddd;
+            border-radius: 8px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        
+        .open-app-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 1rem 0;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        
+        .open-app-btn:hover {
+            background: #0056CC;
+        }
+        
+        .open-app-btn:active {
+            background: #004499;
+        }
+        
+        .fallback-link {
+            display: block;
+            color: #007AFF;
+            text-decoration: none;
+            margin-top: 1rem;
+            font-size: 14px;
+        }
+        
+        .fallback-link:hover {
+            text-decoration: underline;
+        }
+        
         .loading {
-            margin-top: 2rem;
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .loading.show {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <h1>Noval</h1>
-    <p>Redirecting to the app...</p>
-    <div class="loading">
-        <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="25" cy="25" r="20" stroke="#007AFF" stroke-width="4" fill="none" stroke-dasharray="31.415, 31.415" stroke-dashoffset="0">
-                <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
-            </circle>
-        </svg>
+    <h1>📚 Noval</h1>
+    
+    <div class="book-preview">
+        <div class="book-image" id="bookImage">📖</div>
+        <h2>Open in Noval App</h2>
+        <p>Discover your next great read</p>
+        
+        <button class="open-app-btn" id="openAppBtn" onclick="openApp()">
+            Open in App
+        </button>
+        
+        <div class="loading" id="loading">
+            <svg width="30" height="30" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="25" r="20" stroke="#007AFF" stroke-width="4" fill="none" stroke-dasharray="31.415, 31.415" stroke-dashoffset="0">
+                    <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+            <p>Opening app...</p>
+        </div>
+        
+        <a href="https://apps.apple.com/us/app/echo-in-ear-voice-translator/id6742157123" class="fallback-link" id="fallbackLink">
+            Don't have the app? Download from App Store
+        </a>
     </div>
+
+    <script>
+        const bookId = new URLSearchParams(window.location.search).get('id');
+        
+        // Set up Open Graph meta tags
+        if (bookId) {
+            const firebaseImageUrl = `https://firebasestorage.googleapis.com/v0/b/noval-3e2ae.appspot.com/o/${encodeURIComponent(bookId)}?alt=media`;
+            document.getElementById('ogImage').content = firebaseImageUrl;
+            document.getElementById('ogUrl').content = window.location.href;
+            
+            // Try to load the book cover image
+            const bookImage = document.getElementById('bookImage');
+            const img = new Image();
+            img.onload = function() {
+                bookImage.style.backgroundImage = `url('${firebaseImageUrl}')`;
+                bookImage.style.backgroundSize = 'cover';
+                bookImage.style.backgroundPosition = 'center';
+                bookImage.textContent = '';
+            };
+            img.src = firebaseImageUrl;
+            
+            // Automatically try to open the app first
+            tryOpenAppAutomatically();
+        }
+        
+        function tryOpenAppAutomatically() {
+            const appURL = `noval://book?id=${bookId}`;
+            
+            // Set up a timer to show the fallback page if app doesn't open
+            const showFallback = setTimeout(() => {
+                // App didn't open, show the fallback page
+                document.body.style.display = 'block';
+            }, 2000); // Wait 2 seconds
+            
+            // If the app opens, the page will go to background
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "hidden") {
+                    clearTimeout(showFallback);
+                }
+            });
+            
+            // Try to open the app immediately
+            window.location.href = appURL;
+        }
+        
+        function openApp() {
+            if (!bookId) {
+                alert('No book ID found');
+                return;
+            }
+            
+            const appURL = `noval://book?id=${bookId}`;
+            const fallbackURL = "https://apps.apple.com/us/app/echo-in-ear-voice-translator/id6742157123";
+            
+            // Show loading state
+            document.getElementById('openAppBtn').style.display = 'none';
+            document.getElementById('loading').classList.add('show');
+            
+            // Set up fallback timer
+            const redirect = setTimeout(() => {
+                // Hide loading and show fallback option
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('openAppBtn').textContent = 'App not found - Download from App Store';
+                document.getElementById('openAppBtn').style.display = 'block';
+                document.getElementById('openAppBtn').onclick = function() {
+                    window.location.href = fallbackURL;
+                };
+            }, 3000); // Wait 3 seconds
+            
+            // Clear timeout if page becomes hidden (app likely opened)
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "hidden") {
+                    clearTimeout(redirect);
+                }
+            });
+            
+            // Listen for page focus to reset UI if user comes back
+            window.addEventListener("focus", () => {
+                clearTimeout(redirect);
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('openAppBtn').textContent = 'Open in App';
+                document.getElementById('openAppBtn').style.display = 'block';
+                document.getElementById('openAppBtn').onclick = openApp;
+            });
+            
+            // Try to open the app
+            try {
+                window.location.href = appURL;
+            } catch (error) {
+                clearTimeout(redirect);
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('openAppBtn').textContent = 'Download App';
+                document.getElementById('openAppBtn').style.display = 'block';
+                document.getElementById('openAppBtn').onclick = function() {
+                    window.location.href = fallbackURL;
+                };
+            }
+        }
+    </script>
 </body>
 </html>
