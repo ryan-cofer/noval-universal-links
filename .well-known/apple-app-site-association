@@ -1,0 +1,24 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "5AZDVSV3VD.com.bearbuiltlabs.OnlyScans",
+                "paths": ["*"],
+                "components": [
+                    {
+                        "/": "/book*",
+                        "comment": "Matches any URL whose path starts with /book"
+                    },
+                    {
+                        "/": "/book",
+                        "query": {
+                            "file": "*"
+                        },
+                        "comment": "Matches any URL whose path is /book and has a file query parameter"
+                    }
+                ]
+            }
+        ]
+    }
+}
