@@ -146,18 +146,17 @@
             
             if (isMac) {
                 // On macOS, skip the custom URL attempt and go straight to App Store
-                // This avoids the Safari error popup
                 setTimeout(() => {
                     window.location.href = fallbackURL;
                 }, 500);
                 return;
             }
             
-            // For iOS devices, use window.location.href for better app opening reliability
+            // For iOS devices, use iframe method to avoid the popup
             const redirectToAppStore = setTimeout(() => {
                 // App didn't open, redirect to App Store
                 window.location.href = fallbackURL;
-            }, 2000); // Slightly longer timeout for iOS
+            }, 2500); // Longer timeout for iframe method
             
             // If the app opens, the page will go to background
             document.addEventListener("visibilitychange", () => {
@@ -166,23 +165,20 @@
                 }
             });
             
-            // Listen for page focus to detect if user comes back (app didn't open)
-            window.addEventListener("focus", () => {
-                clearTimeout(redirectToAppStore);
-                // If we get focus back quickly, the app probably didn't open
-                setTimeout(() => {
-                    window.location.href = fallbackURL;
-                }, 500);
-            });
+            // Use iframe method for silent app opening attempt
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.style.width = '1px';
+            iframe.style.height = '1px';
+            iframe.src = appURL;
+            document.body.appendChild(iframe);
             
-            // Try to open the app directly (more reliable on iOS than iframe)
-            try {
-                window.location.href = appURL;
-            } catch (error) {
-                // If there's an error, redirect to App Store
-                clearTimeout(redirectToAppStore);
-                window.location.href = fallbackURL;
-            }
+            // Clean up iframe after attempt
+            setTimeout(() => {
+                if (iframe && iframe.parentNode) {
+                    iframe.parentNode.removeChild(iframe);
+                }
+            }, 2000);
         }
         
         function openApp() {
