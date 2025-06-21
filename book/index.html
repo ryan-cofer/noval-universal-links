@@ -146,7 +146,7 @@
             const showFallback = setTimeout(() => {
                 // App didn't open, show the fallback page
                 document.body.style.display = 'block';
-            }, 2000); // Wait 2 seconds
+            }, 1500); // Wait 1.5 seconds
             
             // If the app opens, the page will go to background
             document.addEventListener("visibilitychange", () => {
@@ -155,8 +155,18 @@
                 }
             });
             
-            // Try to open the app immediately
-            window.location.href = appURL;
+            // Try to open the app using iframe method (avoids Safari error popup)
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = appURL;
+            document.body.appendChild(iframe);
+            
+            // Clean up iframe after attempt
+            setTimeout(() => {
+                if (iframe.parentNode) {
+                    iframe.parentNode.removeChild(iframe);
+                }
+            }, 1000);
         }
         
         function openApp() {
