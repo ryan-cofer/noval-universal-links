@@ -141,22 +141,12 @@
         
         function tryOpenAppAutomatically() {
             const appURL = `noval://book?id=${bookId}`;
-            const isMac = /Mac|iPad/.test(navigator.platform) || (navigator.userAgentData && navigator.userAgentData.platform === 'macOS');
             
-            if (isMac) {
-                // On macOS, skip the custom URL attempt and go straight to App Store
-                // This avoids the Safari error popup
-                setTimeout(() => {
-                    window.location.href = "https://apps.apple.com/us/app/duolingo-language-lessons/id570060128";
-                }, 500); // Small delay to allow page to load
-                return;
-            }
-            
-            // For iOS/mobile devices, use the iframe method
+            // Set up a timer to show the fallback page if app doesn't open
             const showFallback = setTimeout(() => {
                 // App didn't open, show the fallback page
                 document.body.style.display = 'block';
-            }, 1500);
+            }, 2000); // Wait 2 seconds
             
             // If the app opens, the page will go to background
             document.addEventListener("visibilitychange", () => {
@@ -165,18 +155,8 @@
                 }
             });
             
-            // Try to open the app using iframe method
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = appURL;
-            document.body.appendChild(iframe);
-            
-            // Clean up iframe after attempt
-            setTimeout(() => {
-                if (iframe.parentNode) {
-                    iframe.parentNode.removeChild(iframe);
-                }
-            }, 1000);
+            // Try to open the app immediately
+            window.location.href = appURL;
         }
         
         function openApp() {
