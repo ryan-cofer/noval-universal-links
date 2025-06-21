@@ -142,31 +142,58 @@
         function tryOpenAppAutomatically() {
             const appURL = `noval://book?id=${bookId}`;
             
+            // Track if we've already shown the fallback
+            let fallbackShown = false;
+            
             // Set up a timer to show the fallback page if app doesn't open
             const showFallback = setTimeout(() => {
-                // App didn't open, show the fallback page
-                document.body.style.display = 'block';
-            }, 1500); // Wait 1.5 seconds
+                if (!fallbackShown) {
+                    fallbackShown = true;
+                    document.body.style.display = 'block';
+                }
+            }, 2500); // Wait 2.5 seconds for iOS
             
             // If the app opens, the page will go to background
-            document.addEventListener("visibilitychange", () => {
+            const handleVisibilityChange = () => {
                 if (document.visibilityState === "hidden") {
                     clearTimeout(showFallback);
+                    fallbackShown = true;
                 }
-            });
+            };
             
-            // Try to open the app using iframe method (avoids Safari error popup)
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = appURL;
-            document.body.appendChild(iframe);
+            document.addEventListener("visibilitychange", handleVisibilityChange);
             
-            // Clean up iframe after attempt
+            // For iOS, we need to handle the focus event too
+            const handleFocus = () => {
+                // If we get focus back quickly, app probably didn't open
+                setTimeout(() => {
+                    if (!fallbackShown && document.visibilityState === "visible") {
+                        fallbackShown = true;
+                        document.body.style.display = 'block';
+                        clearTimeout(showFallback);
+                    }
+                }, 100);
+            };
+            
+            window.addEventListener("focus", handleFocus);
+            
+            // Try to open the app - this will cause a brief error popup on iOS if app isn't installed
+            // but it's the only reliable way to open apps on iOS
+            try {
+                window.location.href = appURL;
+            } catch (error) {
+                if (!fallbackShown) {
+                    fallbackShown = true;
+                    document.body.style.display = 'block';
+                    clearTimeout(showFallback);
+                }
+            }
+            
+            // Clean up event listeners after timeout
             setTimeout(() => {
-                if (iframe.parentNode) {
-                    iframe.parentNode.removeChild(iframe);
-                }
-            }, 1000);
+                document.removeEventListener("visibilitychange", handleVisibilityChange);
+                window.removeEventListener("focus", handleFocus);
+            }, 5000);
         }
         
         function openApp() {
