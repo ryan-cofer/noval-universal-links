@@ -1,254 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Noval Book Preview</title>
-    
-    <!-- Dynamic Open Graph Meta Tags -->
-    <meta property="og:title" content="Check out this book on Noval">
-    <meta property="og:description" content="Tap to open in the Noval app">
-    <meta property="og:image" id="ogImage" content="">
-    <meta property="og:url" id="ogUrl" content="">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    
-    <!-- Smart App Banner (optional) -->
-    <meta name="apple-itunes-app" content="app-id=6742157123">
-    
-    <style>
-        body {
-            font-family: -apple-system, sans-serif;
-            text-align: center;
-            padding: 2rem;
-            color: #333;
-            max-width: 400px;
-            margin: 0 auto;
-            display: none; /* Hidden by default, shown only if app doesn't open */
-        }
-        
-        .book-preview {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 2rem;
-            margin: 2rem 0;
-        }
-        
-        .book-image {
-            width: 120px;
-            height: 160px;
-            background: #ddd;
-            border-radius: 8px;
-            margin: 0 auto 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-        }
-        
-        .open-app-btn {
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 1rem 0;
-            width: 100%;
-            transition: background-color 0.2s;
-        }
-        
-        .open-app-btn:hover {
-            background: #0056CC;
-        }
-        
-        .open-app-btn:active {
-            background: #004499;
-        }
-        
-        .fallback-link {
-            display: block;
-            color: #007AFF;
-            text-decoration: none;
-            margin-top: 1rem;
-            font-size: 14px;
-        }
-        
-        .fallback-link:hover {
-            text-decoration: underline;
-        }
-        
-        .loading {
-            display: none;
-            margin-top: 1rem;
-        }
-        
-        .loading.show {
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Noval</title>
+  <style>
+    body {
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, sans-serif;
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+      background-color: #000;
+      color: #fff;
+    }
+    h1 {
+      font-family: "Helvetica Bold", Helvetica, sans-serif;
+      font-weight: bold;
+      font-size: 3em;
+      letter-spacing: -0.04em;
+      margin-bottom: 30px;
+    }
+    .button {
+      display: inline-block;
+      background: #0071e3;
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      margin: 20px 10px;
+    }
+    p {
+      margin-bottom: 30px;
+    }
+  </style>
 </head>
 <body>
-    <h1>📚 Noval</h1>
+  <h1>Noval</h1>
+  <p>If you're not automatically redirected, click the button below.</p>
+  
+  <a href="https://apps.apple.com/us/app/duolingo-language-lessons/id570060128" id="appStore" class="button">Download OnlyScans</a>
+  
+  <script>
+    // Get the query string params
+    const params = new URLSearchParams(window.location.search);
     
-    <div class="book-preview">
-        <div class="book-image" id="bookImage">📖</div>
-        <h2>Open in Noval App</h2>
-        <p>Discover your next great read</p>
-        
-        <button class="open-app-btn" id="openAppBtn" onclick="openApp()">
-            Open in App
-        </button>
-        
-        <div class="loading" id="loading">
-            <svg width="30" height="30" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="25" cy="25" r="20" stroke="#007AFF" stroke-width="4" fill="none" stroke-dasharray="31.415, 31.415" stroke-dashoffset="0">
-                    <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
-                </circle>
-            </svg>
-            <p>Opening app...</p>
-        </div>
-        
-        <a href="https://apps.apple.com/us/app/duolingo-language-lessons/id570060128" class="fallback-link" id="fallbackLink">
-            Don't have the app? Download from App Store
-        </a>
-    </div>
-
-    <script>
-        const bookId = new URLSearchParams(window.location.search).get('id');
-        
-        // Set up Open Graph meta tags
-        if (bookId) {
-            const firebaseImageUrl = `https://firebasestorage.googleapis.com/v0/b/noval-3e2ae.appspot.com/o/${encodeURIComponent(bookId)}?alt=media`;
-            document.getElementById('ogImage').content = firebaseImageUrl;
-            document.getElementById('ogUrl').content = window.location.href;
-            
-            // Try to load the book cover image
-            const bookImage = document.getElementById('bookImage');
-            const img = new Image();
-            img.onload = function() {
-                bookImage.style.backgroundImage = `url('${firebaseImageUrl}')`;
-                bookImage.style.backgroundSize = 'cover';
-                bookImage.style.backgroundPosition = 'center';
-                bookImage.textContent = '';
-            };
-            img.src = firebaseImageUrl;
-            
-            // Automatically try to open the app first
-            tryOpenAppAutomatically();
-        }
-        
-        function tryOpenAppAutomatically() {
-            const appURL = `noval://book?id=${bookId}`;
-            
-            // Track if we've already shown the fallback
-            let fallbackShown = false;
-            
-            // Set up a timer to show the fallback page if app doesn't open
-            const showFallback = setTimeout(() => {
-                if (!fallbackShown) {
-                    fallbackShown = true;
-                    document.body.style.display = 'block';
-                }
-            }, 2500); // Wait 2.5 seconds for iOS
-            
-            // If the app opens, the page will go to background
-            const handleVisibilityChange = () => {
-                if (document.visibilityState === "hidden") {
-                    clearTimeout(showFallback);
-                    fallbackShown = true;
-                }
-            };
-            
-            document.addEventListener("visibilitychange", handleVisibilityChange);
-            
-            // For iOS, we need to handle the focus event too
-            const handleFocus = () => {
-                // If we get focus back quickly, app probably didn't open
-                setTimeout(() => {
-                    if (!fallbackShown && document.visibilityState === "visible") {
-                        fallbackShown = true;
-                        document.body.style.display = 'block';
-                        clearTimeout(showFallback);
-                    }
-                }, 100);
-            };
-            
-            window.addEventListener("focus", handleFocus);
-            
-            // Try to open the app - this will cause a brief error popup on iOS if app isn't installed
-            // but it's the only reliable way to open apps on iOS
-            try {
-                window.location.href = appURL;
-            } catch (error) {
-                if (!fallbackShown) {
-                    fallbackShown = true;
-                    document.body.style.display = 'block';
-                    clearTimeout(showFallback);
-                }
-            }
-            
-            // Clean up event listeners after timeout
-            setTimeout(() => {
-                document.removeEventListener("visibilitychange", handleVisibilityChange);
-                window.removeEventListener("focus", handleFocus);
-            }, 5000);
-        }
-        
-        function openApp() {
-            if (!bookId) {
-                alert('No book ID found');
-                return;
-            }
-            
-            const appURL = `noval://book?id=${bookId}`;
-            const fallbackURL = "https://apps.apple.com/us/app/duolingo-language-lessons/id570060128";
-            
-            // Show loading state
-            document.getElementById('openAppBtn').style.display = 'none';
-            document.getElementById('loading').classList.add('show');
-            
-            // Set up fallback timer
-            const redirect = setTimeout(() => {
-                // Hide loading and show fallback option
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('openAppBtn').textContent = 'App not found - Download from App Store';
-                document.getElementById('openAppBtn').style.display = 'block';
-                document.getElementById('openAppBtn').onclick = function() {
-                    window.location.href = fallbackURL;
-                };
-            }, 3000); // Wait 3 seconds
-            
-            // Clear timeout if page becomes hidden (app likely opened)
-            document.addEventListener("visibilitychange", () => {
-                if (document.visibilityState === "hidden") {
-                    clearTimeout(redirect);
-                }
-            });
-            
-            // Listen for page focus to reset UI if user comes back
-            window.addEventListener("focus", () => {
-                clearTimeout(redirect);
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('openAppBtn').textContent = 'Open in App';
-                document.getElementById('openAppBtn').style.display = 'block';
-                document.getElementById('openAppBtn').onclick = openApp;
-            });
-            
-            // Try to open the app
-            try {
-                window.location.href = appURL;
-            } catch (error) {
-                clearTimeout(redirect);
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('openAppBtn').textContent = 'Download App';
-                document.getElementById('openAppBtn').style.display = 'block';
-                document.getElementById('openAppBtn').onclick = function() {
-                    window.location.href = fallbackURL;
-                };
-            }
-        }
-    </script>
+    // Get fallback URL (App Store link)
+    const fallbackURL = params.get('fallback') || 'https://apps.apple.com/us/app/duolingo-language-lessons/id570060128';
+    document.getElementById('appStore').href = fallbackURL;
+    
+    // Immediate redirect to App Store
+    window.location.href = fallbackURL;
+  </script>
 </body>
 </html>
